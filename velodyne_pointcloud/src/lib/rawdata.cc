@@ -425,7 +425,38 @@ inline float SQR(float val) { return val*val; }
           intensity = (intensity < min_intensity) ? min_intensity : intensity;
           intensity = (intensity > max_intensity) ? max_intensity : intensity;
 
-          data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, raw->blocks[i].rotation, distance, intensity, time);
+          // data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, raw->blocks[i].rotation, distance, intensity, time);
+          // Calculate azimuth difference of three consecutive scan points
+          float azimuth_corrected = raw->blocks[i].rotation;
+          if (data.last_azimuth_corrected == -1)
+          {
+            data.last_azimuth_corrected = azimuth_corrected;
+          }
+          else if (data.current_corrected_azimuth_diff == -1)
+          {
+          	data.current_corrected_azimuth_diff = azimuth_corrected - data.last_azimuth_corrected;
+          }
+          else if (data.prev_corrected_azimuth_diff == -1)
+      	  {
+          	data.prev_corrected_azimuth_diff = data.current_corrected_azimuth_diff;
+          }
+
+          data.current_corrected_azimuth_diff = azimuth_corrected - data.last_azimuth_corrected;
+          if ((data.current_corrected_azimuth_diff < 0) && (data.prev_corrected_azimuth_diff) >= 0)
+          {
+            data.is_newscan = true;
+          }
+          data.last_azimuth_corrected = azimuth_corrected;
+          data.prev_corrected_azimuth_diff = data.current_corrected_azimuth_diff;
+
+          if (data.is_newscan)
+          {
+            data.addResidualPoint(x_coord, y_coord, z_coord, corrections.laser_ring, azimuth_corrected, distance, intensity);
+          }
+          else
+          {
+            data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, azimuth_corrected, distance, intensity, time);
+          }
         }
       }
       data.newLine();

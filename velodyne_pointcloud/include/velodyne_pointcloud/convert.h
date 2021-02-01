@@ -90,6 +90,11 @@ class Convert
     Config;
     Config config_;
     bool first_rcfg_call;
+    
+    velodyne_msgs::VelodyneScanPtr adjusted_vel_msg_ptr {new velodyne_msgs::VelodyneScan};
+    int last_azimuth_;
+    int current_azimuth_diff_;
+    int prev_azimuth_diff_;
 
   // diagnostics updater
   diagnostic_updater::Updater diagnostics_;
